@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+    }
+
+    canvas {
+        background: greenyellow;
+        display: block;
+        margin: 0 auto;
+        border: 1px solid rebeccapurple;
+    }
+</style>
+</head>
+<body>
+<canvas id="myCanvas" width="480" height="320"></canvas>
+
+</body>
+<script>
+    let canvas = document.getElementById("myCanvas");
+    let ctx = canvas.getContext("2d");
+    let ball = { x : 240,
+        y : 190,
+        Radius :10,
+        dx :1,
+        dy : 1,};
+    let paddle = { width:50,
+        higth:10,
+        x1:207,
+        y1: 310,
+        speed:12,
+        ismovingLeft : false,
+        ismovingRight:false,
+    };
+    let Brick = {
+        offsetX : 50,
+        offsetY:40,
+        padd : 20,
+        row:3,
+        col:5,
+        width: 60,
+        height:15,
+    };
+    let isgameover = false;
+    let isgamewin = false;
+    let Score = 0;
+    let MaxScore = Brick.col*Brick.row;
+    let Bricklist = [];
+    for (let i = 0; i < Brick.row; i++) {
+        for (let j = 0; j < Brick.col;j++) {
+            Bricklist.push({x:Brick.offsetX + j*(Brick.width+Brick.padd),
+                y:Brick.offsetY + i * (Brick.height+Brick.padd),
+                isBroken: false
+
+            });
+        }
+    }
+
+    document.addEventListener('keyup', function (event){
+        console.log( 'KEY UP');
+        console.log(event);
+        if (event.keyCode==37){
+            paddle.ismovingLeft= false;}
+        else if (event.keyCode == 39){
+            paddle.ismovingRight= false;
+        }
+
+    });
+    document.addEventListener('keydown', function (event){
+        console.log( 'KEY DOWN');
+        console.log(event);
+        if (event.keyCode==37){
+            paddle.ismovingLeft= true;}
+        else if (event.keyCode == 39){
+            paddle.ismovingRight= true;
+        }
+
+    });
+    document.addEventListener('muose',function (event){
+        let relativeX = e.clientX - canvas.offsetX;
+        if (relativeX > 0 && relativeX < canvas.width) {
+            paddleX = relativeX - paddle.width / 2;
+        }
+    })
+    function drawScore() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "red";
+        ctx.fillText("Score: " + Score, 8, 20);}
+
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc( ball.x, ball.y, ball.Radius, 0, Math.PI * 2);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.closePath();
+    }
+    function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(paddle.x1,paddle.y1,paddle.width,paddle.higth);
+        ctx.fillStyle = "yello";
+        ctx.fill();
+        ctx.closePath();
+    }
+    function  drawBrick(){
+        Bricklist.forEach(function (b){
+            if(!b.isBroken){
+                ctx.beginPath();
+                ctx.rect(b.x,b.y,Brick.width,Brick.height);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                ctx.closePath();
+            }
+        });
+    }
+    function xulychan(){
+        if (ball.x + ball.dx > canvas.width - ball.Radius || ball.x + ball.dx < ball.Radius) {
+            ball.dx = -ball.dx;
+        }
+        if (ball.y + ball.dy < ball.Radius) {
+            ball.dy = -ball.dy;
+        }
+
+    }
+    function hamxulyvachambongvagach(){
+        Bricklist.forEach(function (b){
+            if(!b.isBroken){
+                if(ball.x>=b.x && ball.x <= b.x + Brick.width &&
+                    ball.y + ball.Radius >= b.y && ball.y - ball.Radius <= b.y + Brick.height){
+                    ball.dy = -ball.dy;
+                    b.isBroken = true;
+                    Score +=1;
+                    if(Score>=MaxScore){
+                        isgameover = true;
+                        isgamewin = true;
+                    }
+
+                }
+            }
+
+        });
+    }
+    function updatechan (){
+        ball.x += ball.dx;
+        ball.y += ball.dy;
+
+    }
+    function vachamgachvabong(){
+        if ( ball.x + ball.Radius>= paddle.x1&& ball.x +ball.Radius <= paddle.x1 + paddle.width && ball.y + ball.Radius >= canvas.height - paddle.higth){
+            ball.dy = -ball.dy;
+        }
+    }
+    function checkgameover(){
+
+        if(ball.y + ball.dy > canvas.height - ball.Radius){
+            isgameover = true;
+        }
+    }
+    function outgame(){
+        if (isgamewin){
+            alert('You Win');
+        }
+        else{
+            alert('You Lose');
+        }
+
+    }
+
+    function draw (){
+        if(!isgameover){
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            drawBall();
+            drawBrick();
+            drawPaddle();
+            drawScore();
+            if(paddle.ismovingLeft){
+                paddle.x1 -= paddle.speed;}
+            else if (paddle.ismovingRight){
+                paddle.x1 += paddle.speed;
+            }
+            if(paddle.x1<0){paddle.x1 = 0;}
+            else if (paddle.x1>canvas.width - paddle.width)
+            {paddle.x1 = canvas.width - paddle.width;}
+
+
+
+            xulychan();
+            vachamgachvabong();
+            hamxulyvachambongvagach();
+            updatechan();
+            checkgameover();
+            requestAnimationFrame(draw);
+        } else {
+            outgame();
+        }
+    }
+    draw();
+
+</script>
+</body>
+</html>
